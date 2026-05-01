@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CT Scan Analysis — LungAI</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <nav>
+      <span class="logo">🫁 LungAI</span>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/preview" class="active">Analyse</a>
+        <a href="/logout">Logout</a>
+      </div>
+    </nav>
+
+    <div class="preview-container">
+      <h2>CT Scan <em>Analysis</em></h2>
+      <p class="preview-sub">
+        Upload a chest CT scan image to detect lung cancer type
+      </p>
+
+      <div
+        class="upload-area"
+        id="uploadArea"
+        onclick="document.getElementById('imgInput').click()"
+      >
+        <div class="upload-icon">📂</div>
+        <p class="upload-text">Click to upload CT scan image</p>
+        <p class="upload-hint">Supports JPG, PNG, BMP — max 10MB</p>
+        <input
+          type="file"
+          id="imgInput"
+          accept="image/*"
+          style="display: none"
+          onchange="previewImage(event)"
+        />
+      </div>
+
+      <div id="previewSection" style="display: none">
+        <div class="preview-img-wrap">
+          <img id="previewImg" src="" alt="CT Scan Preview" />
+          <div class="img-label">Selected CT Scan</div>
+        </div>
+        <button class="btn-primary" id="submitBtn" onclick="submitImage()">
+          <span id="btnText">🔍 Analyse CT Scan</span>
+        </button>
+      </div>
+
+      {% if prediction %}
+      <div class="result-section">
+        <h3>Analysis Result</h3>
+
+        {% if img_filename %}
+        <div class="result-img-wrap">
+          <img
+            src="{{ url_for('static', filename=img_filename) }}"
+            alt="Analysed CT Scan"
+            class="result-img"
+          />
+        </div>
+        {% endif %}
+
+        <div class="result-card {{ prediction.type }}">
+          <div class="result-icon">
+            {% if prediction.type == 'normal' %}✅{% else %}⚠️{% endif %}
+          </div>
+          <div class="result-label">{{ prediction.label }}</div>
+          <div class="result-detail">{{ prediction.detail }}</div>
+          <div class="result-confidence">
+            Confidence: <strong>{{ prediction.confidence }}</strong>
+          </div>
+        </div>
+
+        {% if prediction.type != 'normal' %}
+        <p class="disclaimer">
+          ⚕️ This is an AI-based prediction for educational purposes only.
+          Please consult a qualified medical professional for diagnosis.
+        </p>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    <script>
+      function previewImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const img = document.getElementById("previewImg");
+        img.src = URL.createObjectURL(file);
+        document.getElementById("previewSection").style.display = "flex";
+        document.getElementById("uploadArea").style.borderColor = "#42a5f5";
+        document
+          .getElementById("uploadArea")
+          .querySelector(".upload-text").textContent = file.name;
+      }
+
+      function submitImage() {
+        const fileInput = document.getElementById("imgInput");
+        if (!fileInput.files[0]) {
+          alert("Please select a CT scan image first.");
+          return;
+        }
+
+        const btn = document.getElementById("submitBtn");
+        btn.disabled = true;
+        document.getElementById("btnText").textContent = "⏳ Analysing…";
+
+        const formData = new FormData();
+        formData.append("image", fileInput.files[0]);
+
+        fetch("/preview", { method: "POST", body: formData })
+          .then((r) => r.text())
+          .then((html) => {
+            document.open();
+            document.write(html);
+            document.close();
+          })
+          .catch((err) => {
+            alert("Error: " + err.message);
+            btn.disabled = false;
+            document.getElementById("btnText").textContent =
+              "🔍 Analyse CT Scan";
+          });
+      }
+
+      // Drag and drop support
+      const uploadArea = document.getElementById("uploadArea");
+      uploadArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = "#42a5f5";
+      });
+      uploadArea.addEventListener("dragleave", () => {
+        uploadArea.style.borderColor = "";
+      });
+      uploadArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith("image/")) {
+          document.getElementById("imgInput").files = e.dataTransfer.files;
+          previewImage({ target: { files: e.dataTransfer.files } });
+        }
+      });
+    </script>
+  </body>
+</html>

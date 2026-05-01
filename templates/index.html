@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lung Cancer Detection — CNN</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <nav>
+      <span class="logo">🫁 LungAI</span>
+      <div class="nav-links">
+        <a href="/" class="active">Home</a>
+        <a href="/login">Login</a>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div class="hero-content">
+        <div class="badge">Deep Learning · Medical Imaging · CNN</div>
+        <h1>CT Lung Cancer<br /><em>Detection System</em></h1>
+        <p class="subtitle">
+          Advanced Convolutional Neural Network trained to identify
+          Adenocarcinoma, Large Cell Carcinoma, Squamous Cell Carcinoma, and
+          Normal lung tissue from CT scan images.
+        </p>
+        <a href="/login" class="btn-primary">Get Started →</a>
+      </div>
+      <div class="hero-visual">
+        <div class="scan-card">
+          <div class="scan-label">CT SCAN ANALYSIS</div>
+          <div class="scan-img">
+            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="lung" cx="50%" cy="50%">
+                  <stop offset="0%" stop-color="#4fc3f7" stop-opacity="0.3" />
+                  <stop offset="100%" stop-color="#0d47a1" stop-opacity="0.1" />
+                </radialGradient>
+              </defs>
+              <circle
+                cx="100"
+                cy="100"
+                r="90"
+                fill="url(#lung)"
+                stroke="#1565c0"
+                stroke-width="1"
+                opacity="0.5"
+              />
+              <ellipse
+                cx="75"
+                cy="110"
+                rx="28"
+                ry="45"
+                fill="none"
+                stroke="#42a5f5"
+                stroke-width="2"
+                opacity="0.8"
+              />
+              <ellipse
+                cx="128"
+                cy="108"
+                rx="28"
+                ry="43"
+                fill="none"
+                stroke="#42a5f5"
+                stroke-width="2"
+                opacity="0.8"
+              />
+              <circle cx="75" cy="90" r="5" fill="#ef5350" opacity="0.7" />
+              <line
+                x1="50"
+                y1="50"
+                x2="200"
+                y2="50"
+                stroke="#1e3a5f"
+                stroke-width="0.5"
+                opacity="0.4"
+              />
+              <line
+                x1="50"
+                y1="80"
+                x2="200"
+                y2="80"
+                stroke="#1e3a5f"
+                stroke-width="0.5"
+                opacity="0.4"
+              />
+              <line
+                x1="50"
+                y1="110"
+                x2="200"
+                y2="110"
+                stroke="#1e3a5f"
+                stroke-width="0.5"
+                opacity="0.4"
+              />
+              <line
+                x1="50"
+                y1="140"
+                x2="200"
+                y2="140"
+                stroke="#1e3a5f"
+                stroke-width="0.5"
+                opacity="0.4"
+              />
+              <line
+                x1="50"
+                y1="170"
+                x2="200"
+                y2="170"
+                stroke="#1e3a5f"
+                stroke-width="0.5"
+                opacity="0.4"
+              />
+              <line
+                x1="60"
+                y1="20"
+                x2="60"
+                y2="200"
+                stroke="#1e3a5f"
+                stroke-width="0.5"
+                opacity="0.4"
+              />
+              <line
+                x1="100"
+                y1="20"
+                x2="100"
+                y2="200"
+                stroke="#1e3a5f"
+                stroke-width="0.5"
+                opacity="0.4"
+              />
+              <line
+                x1="140"
+                y1="20"
+                x2="140"
+                y2="200"
+                stroke="#1e3a5f"
+                stroke-width="0.5"
+                opacity="0.4"
+              />
+              <line
+                x1="180"
+                y1="20"
+                x2="180"
+                y2="200"
+                stroke="#1e3a5f"
+                stroke-width="0.5"
+                opacity="0.4"
+              />
+              <rect
+                x="60"
+                y="80"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="#ef5350"
+                stroke-width="1.5"
+                stroke-dasharray="3,2"
+              />
+            </svg>
+          </div>
+          <div class="scan-classes">
+            <span class="tag cancer">Adenocarcinoma</span>
+            <span class="tag cancer">Large Cell</span>
+            <span class="tag cancer">Squamous Cell</span>
+            <span class="tag normal">Normal</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="feature-card">
+        <div class="icon">🔬</div>
+        <h3>4-Class Detection</h3>
+        <p>
+          Classifies CT scans into Adenocarcinoma, Large Cell Carcinoma,
+          Squamous Cell Carcinoma, or Normal.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">⚡</div>
+        <h3>Fast Prediction</h3>
+        <p>
+          CNN model delivers results in seconds. Upload a CT scan and get an
+          instant prediction.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🧠</div>
+        <h3>Deep Learning</h3>
+        <p>
+          Built with TensorFlow & Keras. Trained on chest CT scan images with
+          data augmentation.
+        </p>
+      </div>
+    </section>
+
+    <footer>
+      <p>
+        LungAI · CT Scan Lung Cancer Detection using CNN · For Educational
+        Purposes Only
+      </p>
+    </footer>
+  </body>
+</html>
