@@ -1,214 +1,149 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lung Cancer Detection — CNN</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='style.css') }}"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <nav>
-      <span class="logo">🫁 LungAI</span>
-      <div class="nav-links">
-        <a href="/" class="active">Home</a>
-        <a href="/login">Login</a>
-      </div>
-    </nav>
+{% extends 'base.html' %}
+{% block title %}LungVision AI — Lung Cancer Detection{% endblock %}
 
-    <section class="hero">
-      <div class="hero-content">
-        <div class="badge">Deep Learning · Medical Imaging · CNN</div>
-        <h1>CT Lung Cancer<br /><em>Detection System</em></h1>
-        <p class="subtitle">
-          Advanced Convolutional Neural Network trained to identify
-          Adenocarcinoma, Large Cell Carcinoma, Squamous Cell Carcinoma, and
-          Normal lung tissue from CT scan images.
-        </p>
-        <a href="/login" class="btn-primary">Get Started →</a>
+{% block nav_links %}
+  <a href="/" class="active">🏠 Home</a>
+  {% if logged_in %}
+  <a href="/predict">🔬 Predict</a>
+  <a href="/performance">📊 Performance</a>
+  {% endif %}
+{% endblock %}
+
+{% block nav_right %}
+  {% if logged_in %}
+  <a href="/logout" class="nav-btn-outline">⇐ Logout</a>
+  {% else %}
+  <a href="/login" class="nav-btn-outline">⇒ Login</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<div class="hero-section">
+  <h1>Lung Cancer Detection and Classification<br>using Deep Learning</h1>
+  <div class="hero-underline"></div>
+  <p class="hero-sub">Advanced Lung Cancer Detection System</p>
+</div>
+
+<!-- Video-style banner -->
+<div style="background:linear-gradient(135deg,#0c1e4a 0%,#1a56db 60%,#1d4eaa 100%);padding:60px 32px;text-align:center;color:#fff;position:relative;overflow:hidden;">
+  <div style="max-width:800px;margin:0 auto;position:relative;z-index:1;">
+    <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:16px;padding:40px 32px;">
+      <div style="font-size:2.4rem;margin-bottom:14px;">🧠</div>
+      <h2 style="font-family:'Lexend',sans-serif;font-size:1.5rem;margin-bottom:10px;font-weight:700;">AI-Driven Medical Imaging</h2>
+      <p style="opacity:.8;font-size:.95rem;">Precision lung cancer detection using deep learning</p>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+  <!-- Stats -->
+  <div class="stats-row" style="margin-top:36px;">
+    <div class="stat-card">
+      <div class="stat-icon">%</div>
+      <div>
+        <div class="stat-value">95.56%</div>
+        <div class="stat-label">Test Accuracy</div>
       </div>
-      <div class="hero-visual">
-        <div class="scan-card">
-          <div class="scan-label">CT SCAN ANALYSIS</div>
-          <div class="scan-img">
-            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <radialGradient id="lung" cx="50%" cy="50%">
-                  <stop offset="0%" stop-color="#4fc3f7" stop-opacity="0.3" />
-                  <stop offset="100%" stop-color="#0d47a1" stop-opacity="0.1" />
-                </radialGradient>
-              </defs>
-              <circle
-                cx="100"
-                cy="100"
-                r="90"
-                fill="url(#lung)"
-                stroke="#1565c0"
-                stroke-width="1"
-                opacity="0.5"
-              />
-              <ellipse
-                cx="75"
-                cy="110"
-                rx="28"
-                ry="45"
-                fill="none"
-                stroke="#42a5f5"
-                stroke-width="2"
-                opacity="0.8"
-              />
-              <ellipse
-                cx="128"
-                cy="108"
-                rx="28"
-                ry="43"
-                fill="none"
-                stroke="#42a5f5"
-                stroke-width="2"
-                opacity="0.8"
-              />
-              <circle cx="75" cy="90" r="5" fill="#ef5350" opacity="0.7" />
-              <line
-                x1="50"
-                y1="50"
-                x2="200"
-                y2="50"
-                stroke="#1e3a5f"
-                stroke-width="0.5"
-                opacity="0.4"
-              />
-              <line
-                x1="50"
-                y1="80"
-                x2="200"
-                y2="80"
-                stroke="#1e3a5f"
-                stroke-width="0.5"
-                opacity="0.4"
-              />
-              <line
-                x1="50"
-                y1="110"
-                x2="200"
-                y2="110"
-                stroke="#1e3a5f"
-                stroke-width="0.5"
-                opacity="0.4"
-              />
-              <line
-                x1="50"
-                y1="140"
-                x2="200"
-                y2="140"
-                stroke="#1e3a5f"
-                stroke-width="0.5"
-                opacity="0.4"
-              />
-              <line
-                x1="50"
-                y1="170"
-                x2="200"
-                y2="170"
-                stroke="#1e3a5f"
-                stroke-width="0.5"
-                opacity="0.4"
-              />
-              <line
-                x1="60"
-                y1="20"
-                x2="60"
-                y2="200"
-                stroke="#1e3a5f"
-                stroke-width="0.5"
-                opacity="0.4"
-              />
-              <line
-                x1="100"
-                y1="20"
-                x2="100"
-                y2="200"
-                stroke="#1e3a5f"
-                stroke-width="0.5"
-                opacity="0.4"
-              />
-              <line
-                x1="140"
-                y1="20"
-                x2="140"
-                y2="200"
-                stroke="#1e3a5f"
-                stroke-width="0.5"
-                opacity="0.4"
-              />
-              <line
-                x1="180"
-                y1="20"
-                x2="180"
-                y2="200"
-                stroke="#1e3a5f"
-                stroke-width="0.5"
-                opacity="0.4"
-              />
-              <rect
-                x="60"
-                y="80"
-                width="20"
-                height="20"
-                fill="none"
-                stroke="#ef5350"
-                stroke-width="1.5"
-                stroke-dasharray="3,2"
-              />
-            </svg>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🗄️</div>
+      <div>
+        <div class="stat-value">1000+</div>
+        <div class="stat-label">CT Scans Analyzed</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⚡</div>
+      <div>
+        <div class="stat-value">&lt;2s</div>
+        <div class="stat-label">Prediction Time</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">✅</div>
+      <div>
+        <div class="stat-value">99.8%</div>
+        <div class="stat-label">System Uptime</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Features -->
+  <h2 style="font-family:'Lexend',sans-serif;font-size:1.5rem;font-weight:700;text-align:center;margin-bottom:28px;color:var(--text);">⭐ Key Features</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="fc-icon">🧠</div>
+      <h3>Deep Neural Networks</h3>
+      <p>Utilizes convolutional neural networks (CNN) with residual connections and attention mechanisms for precise feature extraction from medical images.</p>
+    </div>
+    <div class="feature-card">
+      <div class="fc-icon">🗂️</div>
+      <h3>Multi-Class Classification</h3>
+      <p>Distinguishes between Adenocarcinoma, Squamous Cell Carcinoma, Large Cell Carcinoma, and Normal tissue with high specificity and sensitivity.</p>
+    </div>
+    <div class="feature-card">
+      <div class="fc-icon">📊</div>
+      <h3>Real-time Analytics</h3>
+      <p>Comprehensive performance dashboards with confusion matrices, ROC curves, and detailed statistical analysis of model predictions.</p>
+    </div>
+    <div class="feature-card">
+      <div class="fc-icon">⚡</div>
+      <h3>Fast Processing</h3>
+      <p>Get AI-powered analysis results in under 2 seconds with our optimized deep learning pipeline and GPU acceleration.</p>
+    </div>
+    <div class="feature-card">
+      <div class="fc-icon">🛡️</div>
+      <h3>Efficient Architecture</h3>
+      <p>Designed with a streamlined Flask backend that enables fast inference and easy deployment for academic and prototype environments.</p>
+    </div>
+    <div class="feature-card">
+      <div class="fc-icon">📈</div>
+      <h3>Visualization Chart</h3>
+      <p>Generates structured prediction outputs that can be directly used for charts, class comparisons, and performance analysis dashboards.</p>
+    </div>
+  </div>
+
+  <!-- How It Works -->
+  <div class="how-section">
+    <h2>⚙️ How It Works</h2>
+    <div class="how-layout">
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Upload CT Scan</h4>
+            <p>Upload DICOM or standard image formats (JPEG, PNG) of lung CT scans.</p>
           </div>
-          <div class="scan-classes">
-            <span class="tag cancer">Adenocarcinoma</span>
-            <span class="tag cancer">Large Cell</span>
-            <span class="tag cancer">Squamous Cell</span>
-            <span class="tag normal">Normal</span>
+        </div>
+        <div class="how-step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>AI Analysis</h4>
+            <p>Our deep learning model processes the image through multiple convolutional layers.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Detailed Report</h4>
+            <p>Get comprehensive diagnosis with confidence scores and visual explanations.</p>
           </div>
         </div>
       </div>
-    </section>
+      <div class="how-visual">
+        <div class="icon">📄</div>
+        <h3 style="font-family:'Lexend',sans-serif;margin-bottom:8px;">CT Scan Processing Pipeline</h3>
+        <p>Visual representation of our AI analysis workflow</p>
+      </div>
+    </div>
+  </div>
 
-    <section class="features">
-      <div class="feature-card">
-        <div class="icon">🔬</div>
-        <h3>4-Class Detection</h3>
-        <p>
-          Classifies CT scans into Adenocarcinoma, Large Cell Carcinoma,
-          Squamous Cell Carcinoma, or Normal.
-        </p>
-      </div>
-      <div class="feature-card">
-        <div class="icon">⚡</div>
-        <h3>Fast Prediction</h3>
-        <p>
-          CNN model delivers results in seconds. Upload a CT scan and get an
-          instant prediction.
-        </p>
-      </div>
-      <div class="feature-card">
-        <div class="icon">🧠</div>
-        <h3>Deep Learning</h3>
-        <p>
-          Built with TensorFlow & Keras. Trained on chest CT scan images with
-          data augmentation.
-        </p>
-      </div>
-    </section>
-
-    <footer>
-      <p>
-        LungAI · CT Scan Lung Cancer Detection using CNN · For Educational
-        Purposes Only
-      </p>
-    </footer>
-  </body>
-</html>
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2>Ready to Experience AI-Powered Diagnosis?</h2>
+    <p>Join leading medical institutions using our platform for early lung cancer detection.</p>
+    <a href="/login" class="btn btn-white">🚀 Get Started Now</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}LungVision AI{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">🫁 <strong>LUNG</strong><span> VISION</span></a>
+  <div class="nav-links">
+    {% block nav_links %}{% endblock %}
+  </div>
+  {% block nav_right %}
+  <a href="/login" class="nav-btn-outline">⇒ Login</a>
+  {% endblock %}
+</nav>
+
+{% block content %}{% endblock %}
+
+<footer>
+  <div class="footer-logo">🫁 LungVision AI</div>
+  <p>Advanced AI platform for early detection and classification of lung cancer.</p>
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/login">Login</a>
+  </div>
+</footer>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

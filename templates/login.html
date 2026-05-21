@@ -1,94 +1,56 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login — LungAI</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='style.css') }}"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <nav>
-      <span class="logo">🫁 LungAI</span>
-      <div class="nav-links">
-        <a href="/">Home</a>
-        <a href="/login" class="active">Login</a>
-      </div>
-    </nav>
+{% extends 'base.html' %}
+{% block title %}Login — LungVision AI{% endblock %}
 
-    <div class="login-container">
-      <div class="login-box">
-        <div class="login-icon">🔐</div>
-        <h2>Welcome Back</h2>
-        <p class="login-sub">Sign in to access the CT scan detection system</p>
+{% block nav_links %}
+  <a href="/">🏠 Home</a>
+{% endblock %}
 
-        {% if error %}
-        <div class="error-msg">⚠️ {{ error }}</div>
-        {% endif %}
+{% block content %}
+<div class="login-bg">
+  <div class="login-hero">
+    <h1>Lung Cancer Detection and Classification<br>using Deep Learning</h1>
+    <div class="hero-underline"></div>
+    <p class="hero-sub">Advanced Lung Cancer Detection System</p>
+  </div>
 
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input
-            type="text"
-            id="username"
-            placeholder="Enter username"
-            autocomplete="username"
-          />
-        </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            placeholder="Enter password"
-            autocomplete="current-password"
-          />
-        </div>
-        <button class="btn-login" onclick="doLogin()">Login →</button>
+  <div class="login-box">
+    <div class="login-box-header">⇒ Login to Access Diagnostic Platform</div>
 
-        <p class="hint">Default: <code>admin</code> / <code>admin123</code></p>
-      </div>
+    {% if error %}
+    <div class="error-box">⚠️ {{ error }}</div>
+    {% endif %}
+
+    <div class="form-group">
+      <label for="username">👤 Username</label>
+      <input type="text" id="username" placeholder="Enter your username" autocomplete="username"/>
     </div>
+    <div class="form-group">
+      <label for="password">🔒 Password</label>
+      <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password"/>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()">⇒ Login to Dashboard</button>
 
-    <script>
-      function doLogin() {
-        const u = document.getElementById("username").value.trim();
-        const p = document.getElementById("password").value;
-        if (!u || !p) {
-          alert("Please enter both username and password.");
-          return;
-        }
+    <div class="hint-row">
+      Default: <code>admin</code> / <code>admin123</code>
+    </div>
+  </div>
+</div>
 
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = "/login";
-
-        const fu = document.createElement("input");
-        fu.name = "username";
-        fu.value = u;
-        fu.type = "hidden";
-
-        const fp = document.createElement("input");
-        fp.name = "password";
-        fp.value = p;
-        fp.type = "hidden";
-
-        form.appendChild(fu);
-        form.appendChild(fp);
-        document.body.appendChild(form);
-        form.submit();
-      }
-
-      // Allow Enter key to submit
-      document.addEventListener("keydown", function (e) {
-        if (e.key === "Enter") doLogin();
-      });
-    </script>
-  </body>
-</html>
+<script>
+function doLogin() {
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value;
+  if (!u || !p) { alert('Please enter username and password.'); return; }
+  const f = document.createElement('form');
+  f.method = 'POST'; f.action = '/login';
+  [['username', u], ['password', p]].forEach(([n, v]) => {
+    const i = document.createElement('input');
+    i.type = 'hidden'; i.name = n; i.value = v;
+    f.appendChild(i);
+  });
+  document.body.appendChild(f);
+  f.submit();
+}
+document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+</script>
+{% endblock %}

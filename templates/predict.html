@@ -1,0 +1,421 @@
+{% extends 'base.html' %} {% block title %}Predict — LungVision AI{% endblock %}
+{% block nav_links %}
+<a href="/">🏠 Home</a>
+<a href="/predict" class="active">🔬 Predict</a>
+<a href="/performance">📊 Performance</a>
+<a href="/charts">📈 Charts</a>
+{% endblock %} {% block nav_right %}
+<div class="nav-user">
+  <div class="nav-avatar">A</div>
+  <span>{{ user_email }}</span>
+  <a href="/logout" class="nav-btn-outline" style="margin-left: 8px"
+    >⇐ Logout</a
+  >
+</div>
+{% endblock %} {% block content %}
+<div class="page" style="max-width: 860px">
+  <h1
+    style="
+      font-family: &quot;Lexend&quot;, sans-serif;
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: var(--blue);
+      text-align: center;
+      margin-bottom: 6px;
+    "
+  >
+    Lung Cancer Detection and Classification
+  </h1>
+  <div class="hero-underline" style="margin-bottom: 8px"></div>
+  <p style="text-align: center; color: var(--muted); margin-bottom: 32px">
+    Upload a CT scan image for instant AI analysis and classification
+  </p>
+
+  <!-- ══ UPLOAD CARD ══════════════════════════════════════════════════════ -->
+  <div class="section-card" style="margin-bottom: 28px">
+    <div class="section-header">☁️ Upload CT Scan</div>
+    <div class="section-body">
+      <p
+        style="
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: var(--text);
+          margin-bottom: 10px;
+        "
+      >
+        📄 Select CT Scan Image
+      </p>
+
+      <div class="file-input-row">
+        <label class="file-btn" for="imgInput">Choose File</label>
+        <span class="file-name" id="fileName">No file chosen</span>
+        <input
+          type="file"
+          id="imgInput"
+          accept="image/*"
+          style="display: none"
+          onchange="handleFileSelect(event)"
+        />
+      </div>
+      <p class="file-hint">Supported: JPEG, PNG, BMP. Max 2 MB.</p>
+
+      <!-- Drop zone (hidden after file chosen) -->
+      <div
+        id="dropZone"
+        class="upload-zone"
+        onclick="document.getElementById('imgInput').click()"
+      >
+        <div class="upload-icon">📄</div>
+        <strong>No Image Selected</strong>
+        <p>Click or drag &amp; drop CT scan image here</p>
+      </div>
+
+      <!-- Preview (shown after file chosen) -->
+      <div id="previewBox" style="display: none; margin-top: 12px">
+        <img
+          id="previewImg"
+          src=""
+          alt="Preview"
+          style="
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            display: block;
+            margin: 0 auto;
+            border: 1px solid var(--border);
+          "
+        />
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 16px">
+        <button
+          class="btn btn-outline"
+          id="clearBtn"
+          onclick="clearImage()"
+          style="display: none"
+        >
+          ↺ Clear
+        </button>
+        <button
+          class="btn btn-primary"
+          style="flex: 1"
+          id="analyseBtn"
+          onclick="submitImage()"
+          disabled
+        >
+          <span id="btnText">⚙️ Analyze Image</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RESULT CARD (only shown after prediction) ════════════════════════ -->
+  {% if prediction %}
+  <div class="section-card">
+    <div class="section-header">🔬 Prediction Results</div>
+    <div class="section-body">
+      <!-- Uploaded image + diagnosis side by side on wide screens -->
+      <div
+        style="
+          display: flex;
+          gap: 24px;
+          flex-wrap: wrap;
+          align-items: flex-start;
+          margin-bottom: 24px;
+        "
+      >
+        <!-- Analysed image -->
+        {% if img_filename %}
+        <div style="flex: 0 0 auto">
+          <img
+            src="{{ url_for('static', filename=img_filename) }}"
+            alt="Analysed CT Scan"
+            style="
+              width: 220px;
+              height: 220px;
+              object-fit: contain;
+              border-radius: 10px;
+              background: #111;
+              border: 1px solid var(--border);
+              display: block;
+            "
+          />
+          <p
+            style="
+              font-size: 0.75rem;
+              color: var(--muted);
+              text-align: center;
+              margin-top: 6px;
+            "
+          >
+            Uploaded CT Scan
+          </p>
+        </div>
+        {% endif %}
+
+        <!-- Diagnosis summary -->
+        <div style="flex: 1; min-width: 220px">
+          <div style="margin-bottom: 14px">
+            <span
+              style="
+                background: var(--green);
+                color: #fff;
+                padding: 8px 20px;
+                border-radius: 99px;
+                font-weight: 700;
+                font-size: 0.95rem;
+              "
+            >
+              ✅ {{ prediction.confidence }} Confidence
+            </span>
+          </div>
+
+          <div
+            style="font-family:'Lexend',sans-serif;font-size:1.8rem;font-weight:800;
+                      color:{% if prediction.type == 'normal' %}var(--green){% else %}var(--blue){% endif %};
+                      margin-bottom:16px;"
+          >
+            {{ prediction.label }}
+          </div>
+
+          <!-- Facts -->
+          <div class="about-box">
+            <h4>📋 About this class</h4>
+            <ul>
+              {% for fact in prediction.facts %}
+              <li>{{ fact }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Probability bars -->
+      <h4
+        style="
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: var(--muted);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-bottom: 14px;
+        "
+      >
+        📊 Probability Distribution
+      </h4>
+
+      <div style="margin-bottom: 20px">
+        {% for name, prob in prediction.probs %} {% set is_winner = loop.index0
+        == prediction.winner_idx %}
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+          "
+        >
+          <span
+            style="font-size:.85rem;width:200px;flex-shrink:0;
+            {% if is_winner %}font-weight:700;color:var(--blue);{% else %}color:var(--muted);{% endif %}"
+          >
+            {% if is_winner %}✅ {% endif %}{{ name }}
+          </span>
+          <div
+            style="
+              flex: 1;
+              background: var(--card);
+              border-radius: 99px;
+              height: 24px;
+              overflow: hidden;
+            "
+          >
+            <div
+              style="height:100%;border-radius:99px;display:flex;align-items:center;
+              padding-right:10px;justify-content:flex-end;
+              background:{% if name == 'Normal' %}var(--green){% elif is_winner %}var(--blue){% else %}rgba(26,86,219,.25){% endif %};
+              width:{{ [prob,100]|min }}%;color:#fff;font-size:.75rem;font-weight:700;"
+            >
+              {% if prob > 6 %}{{ prob }}%{% endif %}
+            </div>
+          </div>
+          <span
+            style="font-size:.82rem;font-weight:700;padding:3px 12px;border-radius:99px;min-width:60px;
+            text-align:center;
+            background:{% if name == 'Normal' %}var(--green){% elif is_winner %}var(--blue){% else %}var(--border){% endif %};
+            color:{% if is_winner or name == 'Normal' %}#fff{% else %}var(--muted){% endif %};"
+          >
+            {{ prob }}%
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Pie + Bar charts -->
+      <div
+        style="
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          margin-bottom: 16px;
+        "
+      >
+        <div>
+          <p
+            style="
+              font-size: 0.78rem;
+              color: var(--muted);
+              text-align: center;
+              margin-bottom: 6px;
+            "
+          >
+            Pie Chart
+          </p>
+          <canvas id="pieChart" height="200"></canvas>
+        </div>
+        <div>
+          <p
+            style="
+              font-size: 0.78rem;
+              color: var(--muted);
+              text-align: center;
+              margin-bottom: 6px;
+            "
+          >
+            Bar Chart
+          </p>
+          <canvas id="barChart" height="200"></canvas>
+        </div>
+      </div>
+
+      <p style="font-size: 0.8rem; color: var(--muted)">
+        🕐 Analysis completed: {{ prediction.timestamp }}
+      </p>
+
+      <div class="note-box" style="margin-top: 12px">
+        ℹ️
+        <span
+          ><strong>Note:</strong> This AI result must be reviewed by a qualified
+          medical professional before any clinical decision.</span
+        >
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{% if prediction %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const labels = {{ prediction.probs | map(attribute=0) | list | tojson }};
+  const values = {{ prediction.probs | map(attribute=1) | list | tojson }};
+  const winner = {{ prediction.winner_idx }};
+  const colors = [
+    'rgba(26,86,219,0.82)',
+    'rgba(239,68,68,0.78)',
+    'rgba(15,169,104,0.78)',
+    'rgba(245,158,11,0.78)',
+  ];
+
+  new Chart(document.getElementById('pieChart'), {
+    type: 'pie',
+    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderColor:'#fff', borderWidth:2 }] },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position:'bottom', labels:{ font:{size:11}, padding:10 } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed.toFixed(2)}%` } }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels: labels.map(l => l.split(' ').slice(0,2).join(' ')),
+      datasets: [{ label:'Confidence %', data: values, backgroundColor: colors, borderRadius:6 }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend:{ display:false } },
+      scales: {
+        y: { beginAtZero:true, max:100, grid:{ color:'#e4eaf5' } },
+        x: { grid:{ display:false } }
+      }
+    }
+  });
+</script>
+{% endif %}
+
+<script>
+  let selectedFile = null;
+
+  function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    selectedFile = file;
+    showPreview(file);
+  }
+
+  function showPreview(file) {
+    document.getElementById("fileName").textContent = file.name;
+    document.getElementById("dropZone").style.display = "none";
+    document.getElementById("previewBox").style.display = "block";
+    document.getElementById("clearBtn").style.display = "inline-flex";
+    document.getElementById("previewImg").src = URL.createObjectURL(file);
+    document.getElementById("analyseBtn").disabled = false;
+  }
+
+  function clearImage() {
+    selectedFile = null;
+    document.getElementById("imgInput").value = "";
+    document.getElementById("fileName").textContent = "No file chosen";
+    document.getElementById("dropZone").style.display = "flex";
+    document.getElementById("previewBox").style.display = "none";
+    document.getElementById("clearBtn").style.display = "none";
+    document.getElementById("analyseBtn").disabled = true;
+  }
+
+  function submitImage() {
+    if (!selectedFile) {
+      alert("Please select an image first.");
+      return;
+    }
+    const btn = document.getElementById("analyseBtn");
+    btn.disabled = true;
+    document.getElementById("btnText").textContent = "⏳ Analysing…";
+    const fd = new FormData();
+    fd.append("image", selectedFile);
+    fetch("/predict", { method: "POST", body: fd })
+      .then((r) => r.text())
+      .then((html) => {
+        document.open();
+        document.write(html);
+        document.close();
+      })
+      .catch((err) => {
+        alert("Error: " + err.message);
+        btn.disabled = false;
+        document.getElementById("btnText").textContent = "⚙️ Analyze Image";
+      });
+  }
+
+  const dz = document.getElementById("dropZone");
+  if (dz) {
+    dz.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dz.classList.add("dragover");
+    });
+    dz.addEventListener("dragleave", () => dz.classList.remove("dragover"));
+    dz.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dz.classList.remove("dragover");
+      const f = e.dataTransfer.files[0];
+      if (f && f.type.startsWith("image/")) {
+        selectedFile = f;
+        showPreview(f);
+      }
+    });
+  }
+</script>
+{% endblock %}
