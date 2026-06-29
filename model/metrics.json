@@ -1,0 +1,127 @@
+{
+  "cnn": {
+    "accuracy": 35.88,
+    "precision": 26.82,
+    "recall": 35.88,
+    "f1": 19.91,
+    "per_class": {
+      "Adenocarcinoma": {
+        "precision": 35.71,
+        "recall": 98.39,
+        "f1": 52.41
+      },
+      "Large Cell Carcinoma": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "Normal": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "Squamous Cell Carcinoma": {
+        "precision": 50.0,
+        "recall": 2.07,
+        "f1": 3.97
+      }
+    },
+    "n_test_samples": 864
+  },
+  "rf": {
+    "accuracy": 85.42,
+    "precision": 85.91,
+    "recall": 85.42,
+    "f1": 85.42,
+    "per_class": {
+      "Adenocarcinoma": {
+        "precision": 87.08,
+        "recall": 76.13,
+        "f1": 81.24
+      },
+      "Large Cell Carcinoma": {
+        "precision": 73.37,
+        "recall": 86.54,
+        "f1": 79.41
+      },
+      "Normal": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "Squamous Cell Carcinoma": {
+        "precision": 83.4,
+        "recall": 87.19,
+        "f1": 85.25
+      }
+    },
+    "n_test_samples": 864
+  },
+  "knn": {
+    "accuracy": 85.65,
+    "precision": 85.81,
+    "recall": 85.65,
+    "f1": 85.66,
+    "per_class": {
+      "Adenocarcinoma": {
+        "precision": 85.86,
+        "recall": 80.32,
+        "f1": 83.0
+      },
+      "Large Cell Carcinoma": {
+        "precision": 77.78,
+        "recall": 85.26,
+        "f1": 81.35
+      },
+      "Normal": {
+        "precision": 100.0,
+        "recall": 100.0,
+        "f1": 100.0
+      },
+      "Squamous Cell Carcinoma": {
+        "precision": 81.78,
+        "recall": 83.47,
+        "f1": 82.62
+      }
+    },
+    "n_test_samples": 864
+  },
+  "agreement": {
+    "cnn_rf": 32.41,
+    "cnn_knn": 34.49,
+    "rf_knn": 89.93
+  },
+  "distribution": {
+    "Adenocarcinoma": {
+      "true": 310,
+      "cnn_pred": 854,
+      "rf_pred": 271,
+      "knn_pred": 290
+    },
+    "Large Cell Carcinoma": {
+      "true": 156,
+      "cnn_pred": 0,
+      "rf_pred": 184,
+      "knn_pred": 171
+    },
+    "Normal": {
+      "true": 156,
+      "cnn_pred": 0,
+      "rf_pred": 156,
+      "knn_pred": 156
+    },
+    "Squamous Cell Carcinoma": {
+      "true": 242,
+      "cnn_pred": 10,
+      "rf_pred": 253,
+      "knn_pred": 247
+    }
+  },
+  "generated_at": "2026-06-21T21:49:35.665418",
+  "class_names": [
+    "Adenocarcinoma",
+    "Large Cell Carcinoma",
+    "Normal",
+    "Squamous Cell Carcinoma"
+  ]
+}

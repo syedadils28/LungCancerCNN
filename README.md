@@ -1,72 +1,71 @@
-# 🫁 Lung Cancer Detection — CNN + Flask
+# 🫁 LungVision AI — Lung Cancer Detection System
 
-A web app that classifies chest CT scan images into:
-- **Adenocarcinoma**
-- **Large Cell Carcinoma**
-- **Squamous Cell Carcinoma**
-- **Normal**
+Advanced AI platform for early detection and classification of lung cancer using Deep Learning (CNN).
 
----
+## 📁 Project Structure
 
-## Quick Start
+```
+lungvision/
+├── app.py                  ← Flask backend
+├── cancer.h5               ← Your trained model (place here)
+├── requirements.txt
+├── upload/                 ← Uploaded images (auto-created)
+├── static/
+│   └── style.css
+└── templates/
+    ├── base.html
+    ├── index.html          ← Home page
+    ├── login.html          ← Login page
+    ├── predict.html        ← CT scan upload & prediction
+    ├── performance.html    ← Model performance analytics
+    └── charts.html         ← Visualization dashboard
+```
+
+## ⚙️ Setup
 
 ### 1. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Download dataset
-Get it from: https://www.kaggle.com/datasets/mohamedhanyyy/chest-ctscan-images
+### 2. Place your trained model
+Copy your `cancer.h5` file into the `lungvision/` folder.
 
-Extract into `model/` so you have `model/train/`, `model/valid/`, `model/test/`
+> **Note:** If `cancer.h5` is missing, the app runs in **demo mode** with random predictions — useful for UI testing.
 
-### 3. Train the model
-```bash
-cd model
-python train_model.py
-```
-This saves `cancer.h5` in the root folder. Takes ~20–40 minutes.
-
-### 4. Run the app
+### 3. Run the app
 ```bash
 python app.py
 ```
-Open: http://127.0.0.1:5000
 
-**Login:** `admin` / `admin123`
+Open your browser at: **http://localhost:5000**
 
----
+## 🔐 Login Credentials
+- **Username:** `admin`
+- **Password:** `admin123`
 
-## Project Structure
-```
-LungCancerCNN/
-├── model/
-│   ├── train/
-│   ├── valid/
-│   ├── test/
-│   └── train_model.py   ← run this to train
-├── static/
-│   └── style.css
-├── templates/
-│   ├── index.html
-│   ├── login.html
-│   └── preview.html
-├── upload/              ← uploaded images saved here
-├── app.py               ← Flask app
-├── cancer.h5            ← trained model (generated after training)
-├── requirements.txt
-└── README.md
+To change credentials, set environment variables:
+```bash
+export APP_USER=youruser
+export APP_PASS=yourpassword
+export SECRET_KEY=your-random-secret-key
 ```
 
----
+## 🧠 Model Details
+- **Architecture:** CNN (4 Convolutional Blocks + Dense Head)
+- **Input Size:** 150×150 RGB
+- **Classes:** Adenocarcinoma, Large Cell Carcinoma, Squamous Cell Carcinoma, Normal
+- **Framework:** TensorFlow / Keras
 
-## Common Errors
+## 📊 Pages
+| Page | URL | Description |
+|------|-----|-------------|
+| Home | `/` | Landing page with features & stats |
+| Login | `/login` | Authentication |
+| Predict | `/predict` | Upload CT scan & get diagnosis |
+| Performance | `/performance` | Model metrics & charts |
+| Charts | `/charts` | Dataset & training visualizations |
+| Logout | `/logout` | End session |
 
-| Error | Fix |
-|-------|-----|
-| `cancer.h5 not found` | Run `train_model.py` first |
-| `ModuleNotFoundError: tensorflow` | `pip install tensorflow==2.10.0` |
-| Port 5000 in use | Change to `app.run(port=5001)` in app.py |
-| Low accuracy | Increase epochs to 30 in `train_model.py` |
-
-> ⚕️ For educational purposes only. Not a substitute for medical diagnosis.
+## ⚠️ Disclaimer
+This system is for **educational purposes only**. All predictions must be reviewed by qualified medical professionals before any clinical decision-making.

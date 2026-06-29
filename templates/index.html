@@ -1,44 +1,65 @@
-{% extends 'base.html' %}
-{% block title %}LungVision AI — Lung Cancer Detection{% endblock %}
+{% extends 'base.html' %} {% block title %}LungVision AI — Lung Cancer
+Detection{% endblock %} {% block nav_links %}
+<a href="/" class="active">🏠 Home</a>
+{% if logged_in %}
+<a href="/predict">🔬 Predict</a>
+<a href="/predict_numeric">🔢 Predict (Numeric)</a>
+<a href="/performance">📊 Performance</a>
+<a href="/charts">📈 Charts</a>
+{% endif %} {% endblock %} {% block nav_right %} {% if logged_in %}
 
-{% block nav_links %}
-  <a href="/" class="active">🏠 Home</a>
-  {% if logged_in %}
-  <a href="/predict">🔬 Predict</a>
-  <a href="/performance">📊 Performance</a>
-  {% endif %}
-{% endblock %}
-
-{% block nav_right %}
-  {% if logged_in %}
-  <a href="/logout" class="nav-btn-outline">⇐ Logout</a>
-  {% else %}
-  <a href="/login" class="nav-btn-outline">⇒ Login</a>
-  {% endif %}
-{% endblock %}
-
-{% block content %}
+<a href="/logout" class="nav-btn-outline">⇐ Logout</a>
+{% else %}
+<a href="/login" class="nav-btn-outline">⇒ Login</a>
+{% endif %} {% endblock %} {% block content %}
 <!-- Hero -->
 <div class="hero-section">
-  <h1>Lung Cancer Detection and Classification<br>using Deep Learning</h1>
+  <h1>Lung Cancer Detection and Classification<br />using Deep Learning</h1>
   <div class="hero-underline"></div>
   <p class="hero-sub">Advanced Lung Cancer Detection System</p>
 </div>
 
 <!-- Video-style banner -->
-<div style="background:linear-gradient(135deg,#0c1e4a 0%,#1a56db 60%,#1d4eaa 100%);padding:60px 32px;text-align:center;color:#fff;position:relative;overflow:hidden;">
-  <div style="max-width:800px;margin:0 auto;position:relative;z-index:1;">
-    <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:16px;padding:40px 32px;">
-      <div style="font-size:2.4rem;margin-bottom:14px;">🧠</div>
-      <h2 style="font-family:'Lexend',sans-serif;font-size:1.5rem;margin-bottom:10px;font-weight:700;">AI-Driven Medical Imaging</h2>
-      <p style="opacity:.8;font-size:.95rem;">Precision lung cancer detection using deep learning</p>
+<div
+  style="
+    background: linear-gradient(135deg, #0c1e4a 0%, #1a56db 60%, #1d4eaa 100%);
+    padding: 60px 32px;
+    text-align: center;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  "
+>
+  <div style="max-width: 800px; margin: 0 auto; position: relative; z-index: 1">
+    <div
+      style="
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        padding: 40px 32px;
+      "
+    >
+      <div style="font-size: 2.4rem; margin-bottom: 14px">🧠</div>
+      <h2
+        style="
+          font-family: &quot;Lexend&quot;, sans-serif;
+          font-size: 1.5rem;
+          margin-bottom: 10px;
+          font-weight: 700;
+        "
+      >
+        AI-Driven Medical Imaging
+      </h2>
+      <p style="opacity: 0.8; font-size: 0.95rem">
+        Precision lung cancer detection using deep learning
+      </p>
     </div>
   </div>
 </div>
 
 <div class="page">
   <!-- Stats -->
-  <div class="stats-row" style="margin-top:36px;">
+  <div class="stats-row" style="margin-top: 36px">
     <div class="stat-card">
       <div class="stat-icon">%</div>
       <div>
@@ -70,37 +91,67 @@
   </div>
 
   <!-- Key Features -->
-  <h2 style="font-family:'Lexend',sans-serif;font-size:1.5rem;font-weight:700;text-align:center;margin-bottom:28px;color:var(--text);">⭐ Key Features</h2>
+  <h2
+    style="
+      font-family: &quot;Lexend&quot;, sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 28px;
+      color: var(--text);
+    "
+  >
+    ⭐ Key Features
+  </h2>
   <div class="features-grid">
     <div class="feature-card">
       <div class="fc-icon">🧠</div>
       <h3>Deep Neural Networks</h3>
-      <p>Utilizes convolutional neural networks (CNN) with residual connections and attention mechanisms for precise feature extraction from medical images.</p>
+      <p>
+        Utilizes convolutional neural networks (CNN) with residual connections
+        and attention mechanisms for precise feature extraction from medical
+        images.
+      </p>
     </div>
     <div class="feature-card">
       <div class="fc-icon">🗂️</div>
       <h3>Multi-Class Classification</h3>
-      <p>Distinguishes between Adenocarcinoma, Squamous Cell Carcinoma, Large Cell Carcinoma, and Normal tissue with high specificity and sensitivity.</p>
+      <p>
+        Distinguishes between Adenocarcinoma, Squamous Cell Carcinoma, Large
+        Cell Carcinoma, and Normal tissue with high specificity and sensitivity.
+      </p>
     </div>
     <div class="feature-card">
       <div class="fc-icon">📊</div>
       <h3>Real-time Analytics</h3>
-      <p>Comprehensive performance dashboards with confusion matrices, ROC curves, and detailed statistical analysis of model predictions.</p>
+      <p>
+        Comprehensive performance dashboards with confusion matrices, ROC
+        curves, and detailed statistical analysis of model predictions.
+      </p>
     </div>
     <div class="feature-card">
       <div class="fc-icon">⚡</div>
       <h3>Fast Processing</h3>
-      <p>Get AI-powered analysis results in under 2 seconds with our optimized deep learning pipeline and GPU acceleration.</p>
+      <p>
+        Get AI-powered analysis results in under 2 seconds with our optimized
+        deep learning pipeline and GPU acceleration.
+      </p>
     </div>
     <div class="feature-card">
       <div class="fc-icon">🛡️</div>
       <h3>Efficient Architecture</h3>
-      <p>Designed with a streamlined Flask backend that enables fast inference and easy deployment for academic and prototype environments.</p>
+      <p>
+        Designed with a streamlined Flask backend that enables fast inference
+        and easy deployment for academic and prototype environments.
+      </p>
     </div>
     <div class="feature-card">
       <div class="fc-icon">📈</div>
       <h3>Visualization Chart</h3>
-      <p>Generates structured prediction outputs that can be directly used for charts, class comparisons, and performance analysis dashboards.</p>
+      <p>
+        Generates structured prediction outputs that can be directly used for
+        charts, class comparisons, and performance analysis dashboards.
+      </p>
     </div>
   </div>
 
@@ -113,27 +164,43 @@
           <div class="step-num">1</div>
           <div class="step-content">
             <h4>Upload CT Scan</h4>
-            <p>Upload DICOM or standard image formats (JPEG, PNG) of lung CT scans.</p>
+            <p>
+              Upload DICOM or standard image formats (JPEG, PNG) of lung CT
+              scans.
+            </p>
           </div>
         </div>
         <div class="how-step">
           <div class="step-num">2</div>
           <div class="step-content">
             <h4>AI Analysis</h4>
-            <p>Our deep learning model processes the image through multiple convolutional layers.</p>
+            <p>
+              Our deep learning model processes the image through multiple
+              convolutional layers.
+            </p>
           </div>
         </div>
         <div class="how-step">
           <div class="step-num">3</div>
           <div class="step-content">
             <h4>Detailed Report</h4>
-            <p>Get comprehensive diagnosis with confidence scores and visual explanations.</p>
+            <p>
+              Get comprehensive diagnosis with confidence scores and visual
+              explanations.
+            </p>
           </div>
         </div>
       </div>
       <div class="how-visual">
         <div class="icon">📄</div>
-        <h3 style="font-family:'Lexend',sans-serif;margin-bottom:8px;">CT Scan Processing Pipeline</h3>
+        <h3
+          style="
+            font-family: &quot;Lexend&quot;, sans-serif;
+            margin-bottom: 8px;
+          "
+        >
+          CT Scan Processing Pipeline
+        </h3>
         <p>Visual representation of our AI analysis workflow</p>
       </div>
     </div>
@@ -142,7 +209,10 @@
   <!-- CTA -->
   <div class="cta-section">
     <h2>Ready to Experience AI-Powered Diagnosis?</h2>
-    <p>Join leading medical institutions using our platform for early lung cancer detection.</p>
+    <p>
+      Join leading medical institutions using our platform for early lung cancer
+      detection.
+    </p>
     <a href="/login" class="btn btn-white">🚀 Get Started Now</a>
   </div>
 </div>

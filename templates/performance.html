@@ -1,227 +1,745 @@
-{% extends 'base.html' %}
-{% block title %}Performance — LungVision AI{% endblock %}
-
-{% block nav_links %}
-  <a href="/">🏠 Home</a>
-  <a href="/predict">🔬 Predict</a>
-  <a href="/performance" class="active">📊 Performance</a>
-  <a href="/charts">📈 Charts</a>
-{% endblock %}
-
-{% block nav_right %}
+{% extends 'base.html' %} {% block title %}Performance — LungVision AI{%
+endblock %} {% block nav_links %}
+<a href="/">🏠 Home</a>
+<a href="/predict">🔬 Predict</a>
+<a href="/predict_numeric">🔢 Predict (Numeric)</a>
+<a href="/performance" class="active">📊 Performance</a>
+<a href="/charts">📈 Charts</a>
+{% endblock %} {% block nav_right %}
 <div class="nav-user">
   <div class="nav-avatar">A</div>
   <span>{{ user_email }}</span>
-  <a href="/logout" class="nav-btn-outline" style="margin-left:8px;">⇐ Logout</a>
+  <a href="/logout" class="nav-btn-outline" style="margin-left: 8px"
+    >⇐ Logout</a
+  >
 </div>
-{% endblock %}
+{% endblock %} {% block content %}
 
-{% block content %}
-<div class="page">
-  <h1 style="font-family:'Lexend',sans-serif;font-size:1.7rem;font-weight:800;color:var(--blue);text-align:center;margin-bottom:6px;">
+<style>
+  .perf-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+  }
+  .perf-metric-cell {
+    padding: 18px 14px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .perf-metric-cell:last-child {
+    border-right: none;
+  }
+  .perf-metric-val {
+    font-family: "Lexend", sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--blue);
+    line-height: 1;
+  }
+  .perf-metric-label {
+    font-size: 0.74rem;
+    color: var(--muted);
+    margin-top: 5px;
+    font-weight: 500;
+  }
+  .model-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .badge-cnn {
+    background: rgba(26, 86, 219, 0.12);
+    color: #1a56db;
+  }
+  .badge-rf {
+    background: rgba(15, 169, 104, 0.12);
+    color: #0a7a4a;
+  }
+  .badge-knn {
+    background: rgba(245, 158, 11, 0.12);
+    color: #b45309;
+  }
+
+  .acc-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .acc-bar-label {
+    font-size: 0.8rem;
+    color: var(--text);
+    width: 160px;
+    flex-shrink: 0;
+    font-weight: 600;
+  }
+  .acc-bar-track {
+    flex: 1;
+    height: 22px;
+    background: var(--card);
+    border-radius: 99px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .acc-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 10px;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    transition: width 1s ease;
+  }
+  .acc-bar-pct {
+    font-size: 0.8rem;
+    font-weight: 700;
+    width: 52px;
+    text-align: right;
+  }
+
+  .charts-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+
+  .winner-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #d1fae5;
+    color: #065f46;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 99px;
+    margin-left: 6px;
+  }
+
+  .class-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+  .class-table th {
+    background: var(--card);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+  .class-table th:first-child {
+    text-align: left;
+  }
+  .class-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    color: var(--text);
+  }
+  .class-table td:first-child {
+    text-align: left;
+    font-weight: 600;
+  }
+  .class-table tr:last-child td {
+    border-bottom: none;
+  }
+  .class-table tr:hover td {
+    background: rgba(26, 86, 219, 0.03);
+  }
+
+  .verdict-box {
+    padding: 16px 18px;
+    border-radius: 10px;
+    border-left: 4px solid;
+    background: var(--card);
+    margin-bottom: 14px;
+  }
+  .verdict-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin: 0 0 4px;
+  }
+  .verdict-desc {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .tab-btn {
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tab-btn.active {
+    background: var(--blue);
+    color: #fff;
+    border-color: var(--blue);
+  }
+  .tab-btn:hover:not(.active) {
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+  .tab-pane {
+    display: none;
+  }
+  .tab-pane.active {
+    display: block;
+  }
+
+  @media (max-width: 900px) {
+    .charts-2col {
+      grid-template-columns: 1fr;
+    }
+    .perf-grid-3 {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="page" style="max-width: 1060px">
+  <h1
+    style="
+      font-family: &quot;Lexend&quot;, sans-serif;
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: var(--blue);
+      text-align: center;
+      margin-bottom: 6px;
+    "
+  >
     📊 Model Performance Analytics
   </h1>
-  <div class="hero-underline" style="margin-bottom:12px;"></div>
-  <p style="text-align:center;color:var(--muted);margin-bottom:32px;">
-    Comprehensive evaluation metrics and visualization of our deep learning model's diagnostic accuracy
+  <div class="hero-underline" style="margin-bottom: 8px"></div>
+  <p style="text-align: center; color: var(--muted); margin-bottom: 28px">
+    {% if metrics %} Real evaluation results from your trained CNN, Random
+    Forest, and KNN models on {{ metrics.cnn.n_test_samples }} held-out test CT
+    scans. {% else %} No evaluation results found yet. {% endif %}
   </p>
 
-  <!-- ── Overall Metrics ── -->
-  <div class="section-card" style="margin-bottom:24px;">
-    <div class="section-header">ℹ️ Overall Performance Summary</div>
-    <div class="section-body">
-      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:0;">
+  {% if not metrics %}
+  <div class="note-box" style="margin-bottom: 28px">
+    ⚠️
+    <span
+      ><strong>No metrics.json found.</strong> These numbers haven't been
+      computed yet. Run <code>python evaluate_models.py</code> from your
+      <code>dataset</code> folder (after training the CNN and running
+      <code>train_rf_knn.py</code>) to generate real
+      accuracy/precision/recall/F1 numbers for this page.</span
+    >
+  </div>
+  {% else %}
 
-        <div style="padding:20px 24px;border-right:1px solid var(--border);">
-          <div style="font-size:.82rem;color:var(--muted);margin-bottom:8px;">Test Set Accuracy</div>
-          <div style="font-family:'Lexend',sans-serif;font-size:2rem;font-weight:800;color:var(--blue);">95.56%</div>
-          <div style="height:6px;background:var(--blue);border-radius:99px;width:95.56%;margin:10px 0 6px;"></div>
-          <div style="font-size:.78rem;color:var(--muted);">Accuracy on 2,000 test CT scans</div>
+  <!-- ══ TAB SWITCHER ══════════════════════════════════════════════════════ -->
+  <div
+    style="
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    "
+  >
+    <button class="tab-btn active" onclick="showTab('all')" id="tab-all">
+      🔍 All Models
+    </button>
+    <button class="tab-btn" onclick="showTab('ctscan')" id="tab-ctscan">
+      🧠 CT Scan Models
+    </button>
+    <button class="tab-btn" onclick="showTab('compare')" id="tab-compare">
+      ⚖️ Comparison
+    </button>
+    <button class="tab-btn" onclick="showTab('numeric')" id="tab-numeric">
+      🔢 Numeric Models
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       TAB 1 — ALL MODELS OVERVIEW
+  ══════════════════════════════════════════════════════════════════════════ -->
+  <div class="tab-pane active" id="pane-all">
+    <div class="section-card" style="margin-bottom: 24px">
+      <div class="section-header">ℹ️ Overall Performance Summary</div>
+      <div class="section-body" style="padding: 0">
+        <div class="perf-grid-3">
+          <div
+            class="perf-metric-cell"
+            style="padding: 20px 18px; align-items: flex-start"
+          >
+            <div
+              style="
+                font-size: 0.76rem;
+                color: var(--muted);
+                margin-bottom: 6px;
+              "
+            >
+              Best Accuracy
+            </div>
+            <div
+              style="
+                font-family: &quot;Lexend&quot;, sans-serif;
+                font-size: 2rem;
+                font-weight: 800;
+                color: var(--blue);
+              "
+            >
+              {{ metrics.cnn.accuracy }}%
+            </div>
+            <div
+              style="height:5px;background:var(--blue);border-radius:99px;width:{{ metrics.cnn.accuracy }}%;margin:8px 0 4px;"
+            ></div>
+            <div style="font-size: 0.72rem; color: var(--muted)">
+              CNN on {{ metrics.cnn.n_test_samples }} test CT scans
+            </div>
+          </div>
+          <div class="perf-metric-cell">
+            <div class="perf-metric-val">{{ metrics.rf.accuracy }}%</div>
+            <div class="perf-metric-label">RF Accuracy</div>
+          </div>
+          <div class="perf-metric-cell" style="border-right: none">
+            <div class="perf-metric-val">{{ metrics.knn.accuracy }}%</div>
+            <div class="perf-metric-label">KNN Accuracy</div>
+          </div>
         </div>
+      </div>
+    </div>
 
-        {% for label, val in [('Precision','94.2%'),('Recall','95.8%'),('Specificity','96.3%'),('F1-Score','95.6%')] %}
-        <div style="padding:20px 16px;border-right:{% if not loop.last %}1px solid var(--border){% else %}none{% endif %};display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
-          <div style="font-family:'Lexend',sans-serif;font-size:1.5rem;font-weight:700;color:var(--blue);">{{ val }}</div>
-          <div style="font-size:.78rem;color:var(--muted);margin-top:4px;">{{ label }}</div>
+    <div class="section-card" style="margin-bottom: 24px">
+      <div class="section-header">🏆 Model Accuracy Ranking</div>
+      <div class="section-body">
+        <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 18px">
+          All three models ranked by real test accuracy. RF and KNN use
+          CNN-extracted 256-dim features.
+        </p>
+
+        {% set models = [ ('🧠', 'CNN (CT Scan)', 'Deep learning — primary CT
+        scan model', metrics.cnn.accuracy, '#1a56db', metrics.cnn.accuracy ==
+        ([metrics.cnn.accuracy, metrics.rf.accuracy, metrics.knn.accuracy] |
+        max)), ('🌲', 'Random Forest', 'Trained on CNN-extracted 256-dim
+        features', metrics.rf.accuracy, '#0a7a4a', metrics.rf.accuracy ==
+        ([metrics.cnn.accuracy, metrics.rf.accuracy, metrics.knn.accuracy] |
+        max)), ('📍', 'KNN', 'K-Nearest Neighbors on CNN features',
+        metrics.knn.accuracy, '#b45309', metrics.knn.accuracy ==
+        ([metrics.cnn.accuracy, metrics.rf.accuracy, metrics.knn.accuracy] |
+        max)), ] %} {% for icon, name, desc, acc, color, is_best in models %}
+        <div class="acc-bar-wrap">
+          <div class="acc-bar-label">
+            {{ icon }} {{ name }} {% if is_best %}<span class="winner-tag"
+              >👑 Best</span
+            >{% endif %}
+          </div>
+          <div class="acc-bar-track">
+            <div
+              class="acc-bar-fill"
+              style="width:{{ acc }}%;background:{{ color }};"
+            >
+              {% if acc > 12 %}{{ acc }}%{% endif %}
+            </div>
+          </div>
+          <div class="acc-bar-pct" style="color:{{ color }};">{{ acc }}%</div>
         </div>
         {% endfor %}
+      </div>
+    </div>
 
+    <div class="charts-2col">
+      <div class="section-card">
+        <div class="section-header">📈 Accuracy by Model</div>
+        <div class="section-body">
+          <div style="position: relative; height: 240px">
+            <canvas id="allAccChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="section-header">📋 True vs Predicted Counts</div>
+        <div class="section-body">
+          <div style="position: relative; height: 240px">
+            <canvas id="ctDistChart"></canvas>
+          </div>
+        </div>
       </div>
     </div>
   </div>
+  <!-- /pane-all -->
 
-  <!-- ── Two Charts Row ── -->
-  <div class="charts-2col">
-
-    <!-- Classification Distribution -->
-    <div class="section-card">
-      <div class="section-header">📋 Classification Distribution</div>
-      <div class="section-body">
-        <div style="position:relative;height:260px;">
-          <canvas id="distChart"></canvas>
+  <!-- ══════════════════════════════════════════════════════════════════════
+       TAB 2 — CT SCAN MODELS DETAIL
+  ══════════════════════════════════════════════════════════════════════════ -->
+  <div class="tab-pane" id="pane-ctscan">
+    <div
+      style="
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+      "
+    >
+      {% for icon, name, m, color in [ ('🧠','CNN (Primary)', metrics.cnn,
+      '#1a56db'), ('🌲','Random Forest', metrics.rf, '#0a7a4a'), ('📍','KNN',
+      metrics.knn, '#b45309'), ] %}
+      <div class="section-card" style="margin-bottom: 0">
+        <div class="section-body" style="text-align: center">
+          <div style="font-size: 1.8rem; margin-bottom: 6px">{{ icon }}</div>
+          <div
+            style="font-size: 0.78rem; color: var(--muted); margin-bottom: 4px"
+          >
+            {{ name }}
+          </div>
+          <div
+            style="font-family:'Lexend',sans-serif;font-size:2rem;font-weight:800;color:{{ color }};"
+          >
+            {{ m.accuracy }}%
+          </div>
+          <div
+            style="height:4px;background:{{ color }};border-radius:99px;margin:10px 0;opacity:0.3;"
+          ></div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-around;
+              margin-top: 8px;
+            "
+          >
+            <div>
+              <div style="font-size:0.9rem;font-weight:700;color:{{ color }};">
+                {{ m.precision }}%
+              </div>
+              <div style="font-size: 0.68rem; color: var(--muted)">
+                Precision
+              </div>
+            </div>
+            <div>
+              <div style="font-size:0.9rem;font-weight:700;color:{{ color }};">
+                {{ m.recall }}%
+              </div>
+              <div style="font-size: 0.68rem; color: var(--muted)">Recall</div>
+            </div>
+            <div>
+              <div style="font-size:0.9rem;font-weight:700;color:{{ color }};">
+                {{ m.f1 }}%
+              </div>
+              <div style="font-size: 0.68rem; color: var(--muted)">F1</div>
+            </div>
+          </div>
         </div>
-        <p style="text-align:center;font-size:.78rem;color:var(--muted);margin-top:10px;">
-          Shows true vs predicted classifications across all 4 lung tissue types
-        </p>
       </div>
+      {% endfor %}
     </div>
 
-    <!-- Training History — FIXED -->
-    <div class="section-card">
-      <div class="section-header">📈 Training History</div>
+    <div class="section-card" style="margin-bottom: 24px">
+      <div class="section-header">📊 Per-Class F1-Score</div>
       <div class="section-body">
-        <div style="position:relative;height:260px;">
-          <canvas id="trainChart"></canvas>
+        <table class="class-table">
+          <thead>
+            <tr>
+              <th>Cancer Type</th>
+              <th>🧠 CNN</th>
+              <th>🌲 RF</th>
+              <th>📍 KNN</th>
+              <th>Best Model</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for cls in metrics.class_names %} {% set f1s = {'CNN':
+            metrics.cnn.per_class[cls].f1, 'RF': metrics.rf.per_class[cls].f1,
+            'KNN': metrics.knn.per_class[cls].f1} %} {% set best = f1s |
+            dictsort(by='value') | last %}
+            <tr>
+              <td>{{ cls }}</td>
+              <td style="color: #1a56db; font-weight: 700">
+                {{ metrics.cnn.per_class[cls].f1 }}%
+              </td>
+              <td style="color: #0a7a4a; font-weight: 600">
+                {{ metrics.rf.per_class[cls].f1 }}%
+              </td>
+              <td style="color: #b45309; font-weight: 600">
+                {{ metrics.knn.per_class[cls].f1 }}%
+              </td>
+              <td>
+                <span class="model-badge badge-{{ best[0]|lower }}"
+                  >{{ best[0] }}</span
+                >
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div style="margin-top: 24px; position: relative; height: 220px">
+          <canvas id="ctClassChart"></canvas>
         </div>
-        <p style="text-align:center;font-size:.78rem;color:var(--muted);margin-top:10px;">
-          Model accuracy and loss progression over 50 training epochs
-        </p>
       </div>
     </div>
-
   </div>
+  <!-- /pane-ctscan -->
 
-  <!-- ── Per-Class Metrics ── -->
-  <div class="section-card" style="margin-bottom:24px;">
-    <div class="section-header">📊 Per-Class Performance Metrics</div>
-    <div class="section-body">
-      <div style="margin-bottom:20px;">
-        {% for name, pct in [('Adenocarcinoma',96),('Large Cell Carcinoma',93),('Squamous Cell Carcinoma',95),('Normal',98)] %}
-        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
-          <span style="font-size:.88rem;color:var(--text);width:170px;flex-shrink:0;">{{ name }}</span>
-          <div style="flex:1;background:var(--card);border-radius:99px;height:26px;overflow:hidden;">
-            <div style="height:100%;background:var(--blue);border-radius:99px;width:{{ pct }}%;display:flex;align-items:center;justify-content:flex-end;padding-right:12px;color:#fff;font-size:.78rem;font-weight:700;">
+  <!-- ══════════════════════════════════════════════════════════════════════
+       TAB 3 — COMPARISON & AGREEMENT
+  ══════════════════════════════════════════════════════════════════════════ -->
+  <div class="tab-pane" id="pane-compare">
+    <div class="section-card" style="margin-bottom: 24px">
+      <div class="section-header">⚖️ Head-to-Head Model Comparison</div>
+      <div class="section-body">
+        <table class="class-table">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Input</th>
+              <th>Accuracy</th>
+              <th>Precision</th>
+              <th>Recall</th>
+              <th>F1</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for icon, name, inp, m, color, badge in [ ('🧠','CNN','CT Image',
+            metrics.cnn, '#1a56db', 'badge-cnn'), ('🌲','Random Forest','CNN
+            Features', metrics.rf, '#0a7a4a', 'badge-rf'), ('📍','KNN','CNN
+            Features', metrics.knn, '#b45309', 'badge-knn'), ] %}
+            <tr>
+              <td>{{ icon }} {{ name }}</td>
+              <td
+                style="
+                  color: var(--muted);
+                  font-weight: 400;
+                  font-size: 0.75rem;
+                "
+              >
+                {{ inp }}
+              </td>
+              <td style="color:{{ color }};font-weight:800;">
+                {{ m.accuracy }}%
+              </td>
+              <td>{{ m.precision }}%</td>
+              <td>{{ m.recall }}%</td>
+              <td>{{ m.f1 }}%</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section-card" style="margin-bottom: 24px">
+      <div class="section-header">🤝 Model Agreement Analysis</div>
+      <div class="section-body">
+        <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 20px">
+          How often do models agree when run on the same {{
+          metrics.cnn.n_test_samples }}-image test set?
+        </p>
+
+        {% for pair, pct, color in [ ('CNN ↔ RF', metrics.agreement.cnn_rf,
+        '#1a56db'), ('CNN ↔ KNN', metrics.agreement.cnn_knn, '#0a7a4a'), ('RF ↔
+        KNN', metrics.agreement.rf_knn, '#b45309'), ] %}
+        <div class="acc-bar-wrap">
+          <div class="acc-bar-label" style="width: 140px">{{ pair }}</div>
+          <div class="acc-bar-track">
+            <div
+              class="acc-bar-fill"
+              style="width:{{ pct }}%;background:{{ color }};"
+            >
               {{ pct }}%
             </div>
           </div>
         </div>
         {% endfor %}
       </div>
+    </div>
 
-      <!-- Per-class chart -->
-      <div style="position:relative;height:200px;">
-        <canvas id="classChart"></canvas>
+    <div class="section-card" style="margin-bottom: 24px">
+      <div class="section-header">🏁 Verdict — Which Model to Trust?</div>
+      <div class="section-body">
+        <div class="verdict-box" style="border-color: #1a56db">
+          <p class="verdict-title" style="color: #1a56db">
+            🧠 CNN — Primary Diagnostic Model ({{ metrics.cnn.accuracy }}%)
+          </p>
+          <p class="verdict-desc">
+            Trained end-to-end on CT scan images, it learns spatial patterns
+            invisible to other models. Treat this as the primary result.
+          </p>
+        </div>
+        <div class="verdict-box" style="border-color: #0a7a4a">
+          <p class="verdict-title" style="color: #0a7a4a">
+            🌲 Random Forest — Validation Model ({{ metrics.rf.accuracy }}%)
+          </p>
+          <p class="verdict-desc">
+            Trained on the CNN's own 256-dim features. When RF and CNN agree,
+            confidence is high; when they disagree, flag for review.
+          </p>
+        </div>
+        <div class="verdict-box" style="border-color: #b45309">
+          <p class="verdict-title" style="color: #b45309">
+            📍 KNN — Secondary Validation ({{ metrics.knn.accuracy }}%)
+          </p>
+          <p class="verdict-desc">
+            A useful second opinion, typically trailing RF. Use agreement as a
+            confidence booster, not a standalone decision tool.
+          </p>
+        </div>
+        <div class="note-box" style="margin-top: 6px">
+          ℹ️
+          <span
+            ><strong>Important:</strong> All models are educational tools only.
+            No model output should be used for clinical decisions without review
+            by a qualified medical professional.</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card" style="margin-bottom: 24px">
+      <div class="section-header">📈 Multi-Model Performance Radar</div>
+      <div class="section-body">
+        <div
+          style="
+            position: relative;
+            height: 320px;
+            max-width: 500px;
+            margin: 0 auto;
+          "
+        >
+          <canvas id="radarChart"></canvas>
+        </div>
       </div>
     </div>
   </div>
+  <!-- /pane-compare -->
 
+  <!-- ══════════════════════════════════════════════════════════════════════
+       TAB 4 — NUMERIC MODELS (NOT BUILT YET)
+  ══════════════════════════════════════════════════════════════════════════ -->
+  <div class="tab-pane" id="pane-numeric">
+    <div class="section-card">
+      <div class="section-header">🔢 Numeric Symptom-Questionnaire Models</div>
+      <div class="section-body" style="text-align: center; padding: 40px 20px">
+        <div style="font-size: 2rem; margin-bottom: 10px">🚧</div>
+        <p style="font-weight: 700; color: var(--text); margin-bottom: 6px">
+          Coming Soon
+        </p>
+        <p
+          style="
+            font-size: 0.85rem;
+            color: var(--muted);
+            max-width: 420px;
+            margin: 0 auto;
+          "
+        >
+          A symptom-based screening model (Random Forest / KNN on a
+          questionnaire, no CT scan required) hasn't been built yet for this
+          project. This tab will populate once that feature is added.
+        </p>
+      </div>
+    </div>
+  </div>
+  <!-- /pane-numeric -->
+
+  {% endif %}
 </div>
+<!-- /page -->
 
+{% if metrics %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// ── Classification Distribution bar chart ──
-new Chart(document.getElementById('distChart'), {
-  type: 'bar',
-  data: {
-    labels: ['Adenocarcinoma', 'Large Cell', 'Normal', 'Squamous'],
-    datasets: [{
-      label: 'True Positives',
-      data: [380, 410, 450, 360],
-      backgroundColor: 'rgba(26,86,219,0.65)',
-      borderRadius: 6,
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { position: 'top' } },
-    scales: {
-      y: { beginAtZero: true, grid: { color: '#e4eaf5' } },
-      x: { grid: { display: false } }
-    }
+  function showTab(id) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('pane-' + id).classList.add('active');
+    document.getElementById('tab-' + id).classList.add('active');
   }
-});
 
-// ── Training History — dual line chart (FIXED) ──
-(function() {
-  const N = 50;
-  const epochs = Array.from({length: N}, (_, i) => i + 1);
+  const gridColor = '#e4eaf5';
+  const C = { cnn: 'rgba(26,86,219,0.85)', rf: 'rgba(15,169,104,0.85)', knn: 'rgba(245,158,11,0.85)' };
 
-  // Realistic smooth curves
-  function trainAcc(e)  { return Math.min(0.992, 0.50 + 0.49  * (1 - Math.exp(-e / 11))); }
-  function valAcc(e)    { return Math.min(0.965, 0.47 + 0.47  * (1 - Math.exp(-e / 14))); }
+  const classNames = {{ metrics.class_names | tojson }};
+  const cnnAcc = {{ metrics.cnn.accuracy }}, rfAcc = {{ metrics.rf.accuracy }}, knnAcc = {{ metrics.knn.accuracy }};
 
-  new Chart(document.getElementById('trainChart'), {
-    type: 'line',
+  new Chart(document.getElementById('allAccChart'), {
+    type: 'bar',
     data: {
-      labels: epochs,
-      datasets: [
-        {
-          label: 'Training Accuracy',
-          data: epochs.map(trainAcc),
-          borderColor: 'rgba(26,86,219,0.9)',
-          backgroundColor: 'rgba(26,86,219,0.08)',
-          fill: true,
-          tension: 0.4,
-          pointRadius: 0,
-          borderWidth: 2,
-        },
-        {
-          label: 'Validation Accuracy',
-          data: epochs.map(valAcc),
-          borderColor: 'rgba(15,169,104,0.85)',
-          backgroundColor: 'rgba(15,169,104,0.06)',
-          fill: true,
-          tension: 0.4,
-          pointRadius: 0,
-          borderWidth: 2,
-        }
-      ]
+      labels: ['CNN', 'RF', 'KNN'],
+      datasets: [{ label: 'Test Accuracy (%)', data: [cnnAcc, rfAcc, knnAcc], backgroundColor: [C.cnn, C.rf, C.knn], borderRadius: 7 }],
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'top' },
-        tooltip: {
-          callbacks: {
-            label: ctx => ` ${ctx.dataset.label}: ${(ctx.parsed.y * 100).toFixed(1)}%`
-          }
-        }
-      },
-      scales: {
-        y: {
-          min: 0.40,
-          max: 1.00,
-          ticks: { callback: v => (v * 100).toFixed(0) + '%' },
-          grid: { color: '#e4eaf5' }
-        },
-        x: {
-          title: { display: true, text: 'Epoch', font: { size: 11 } },
-          grid: { display: false },
-          ticks: { maxTicksLimit: 10 }
-        }
-      }
-    }
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { min: 0, max: 100, grid: { color: gridColor }, ticks: { callback: v => v + '%' } }, x: { grid: { display: false } } },
+    },
   });
-})();
 
-// ── Per-class accuracy bar ──
-new Chart(document.getElementById('classChart'), {
-  type: 'bar',
-  data: {
-    labels: ['Adenocarcinoma', 'Large Cell Carcinoma', 'Squamous Cell Carcinoma', 'Normal'],
-    datasets: [{
-      label: 'F1-Score (%)',
-      data: [96, 93, 95, 98],
-      backgroundColor: [
-        'rgba(26,86,219,0.75)',
-        'rgba(239,68,68,0.70)',
-        'rgba(245,158,11,0.75)',
-        'rgba(15,169,104,0.75)',
+  const dist = {{ metrics.distribution | tojson }};
+  new Chart(document.getElementById('ctDistChart'), {
+    type: 'bar',
+    data: {
+      labels: classNames,
+      datasets: [
+        { label: 'True',      data: classNames.map(c => dist[c].true),     backgroundColor: 'rgba(26,86,219,0.65)', borderRadius: 5 },
+        { label: 'CNN Pred',  data: classNames.map(c => dist[c].cnn_pred), backgroundColor: 'rgba(15,169,104,0.65)',borderRadius: 5 },
       ],
-      borderRadius: 6,
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: {
-      y: { min: 80, max: 100, grid: { color: '#e4eaf5' } },
-      x: { grid: { display: false } }
-    }
-  }
-});
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: { y: { beginAtZero: true, grid: { color: gridColor } }, x: { grid: { display: false } } },
+    },
+  });
+
+  const perClass = {{ {'cnn': metrics.cnn.per_class, 'rf': metrics.rf.per_class, 'knn': metrics.knn.per_class} | tojson }};
+  new Chart(document.getElementById('ctClassChart'), {
+    type: 'bar',
+    data: {
+      labels: classNames,
+      datasets: [
+        { label: 'CNN', data: classNames.map(c => perClass.cnn[c].f1), backgroundColor: C.cnn, borderRadius: 5 },
+        { label: 'RF',  data: classNames.map(c => perClass.rf[c].f1),  backgroundColor: C.rf,  borderRadius: 5 },
+        { label: 'KNN', data: classNames.map(c => perClass.knn[c].f1), backgroundColor: C.knn, borderRadius: 5 },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: { y: { min: 0, max: 100, grid: { color: gridColor }, ticks: { callback: v => v + '%' } }, x: { grid: { display: false } } },
+    },
+  });
+
+  new Chart(document.getElementById('radarChart'), {
+    type: 'radar',
+    data: {
+      labels: ['Accuracy', 'Precision', 'Recall', 'F1-Score'],
+      datasets: [
+        { label: 'CNN', data: [{{ metrics.cnn.accuracy }}, {{ metrics.cnn.precision }}, {{ metrics.cnn.recall }}, {{ metrics.cnn.f1 }}], borderColor: 'rgba(26,86,219,0.9)', backgroundColor: 'rgba(26,86,219,0.12)', pointBackgroundColor: 'rgba(26,86,219,0.9)', borderWidth: 2 },
+        { label: 'RF',  data: [{{ metrics.rf.accuracy }}, {{ metrics.rf.precision }}, {{ metrics.rf.recall }}, {{ metrics.rf.f1 }}],   borderColor: 'rgba(15,169,104,0.85)', backgroundColor: 'rgba(15,169,104,0.1)', pointBackgroundColor: 'rgba(15,169,104,0.85)', borderWidth: 2 },
+        { label: 'KNN', data: [{{ metrics.knn.accuracy }}, {{ metrics.knn.precision }}, {{ metrics.knn.recall }}, {{ metrics.knn.f1 }}], borderColor: 'rgba(245,158,11,0.85)', backgroundColor: 'rgba(245,158,11,0.08)', pointBackgroundColor: 'rgba(245,158,11,0.85)', borderWidth: 2 },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12 } } },
+      scales: { r: { min: 50, max: 100, ticks: { stepSize: 10, callback: v => v + '%', font: { size: 9 } }, grid: { color: gridColor }, pointLabels: { font: { size: 11 } } } },
+    },
+  });
 </script>
-{% endblock %}
+{% endif %} {% endblock %}

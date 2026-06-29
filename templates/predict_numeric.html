@@ -1,0 +1,800 @@
+{% extends 'base.html' %} {% block title %}Predict (Numeric) — LungVision AI{%
+endblock %} {% block nav_links %}
+<a href="/">🏠 Home</a>
+<a href="/predict">🔬 Predict</a>
+<a href="/predict_numeric" class="active" -->🔢 Predict (Numeric)</a>
+<a href="/performance">📊 Performance</a>
+<a href="/charts">📈 Charts</a>
+{% endblock %} {% block nav_right %}
+<div class="nav-user">
+  <div class="nav-avatar">A</div>
+  <span>{{ user_email }}</span>
+  <a href="/logout" class="nav-btn-outline" style="margin-left: 8px"
+    >⇐ Logout</a
+  >
+</div>
+{% endblock %} {% block content %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='predict_numeric.css') }}"
+/>
+
+{# ── Same colour macros used on predict.html ── #} {% macro risk_color(type)
+%}{% if type == 'normal' %}#16a34a{% else %}#dc2626{% endif %}{% endmacro %} {%
+macro risk_bg(type) %}{% if type == 'normal' %}rgba(22,163,74,0.08){% else
+%}rgba(220,38,38,0.08){% endif %}{% endmacro %} {% macro risk_label(type) %}{%
+if type == 'normal' %}Normal{% else %}Cancer Detected{% endif %}{% endmacro %}
+{% macro bar_color(name) %}{% if name == 'Normal' %}#16a34a{% else %}#dc2626{%
+endif %}{% endmacro %}
+
+<div class="page" style="max-width: 980px">
+  <h1
+    style="
+      font-family: &quot;Lexend&quot;, sans-serif;
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: var(--blue);
+      text-align: center;
+      margin-bottom: 6px;
+    "
+  >
+    🔢 Lung Cancer Risk Predictor (Numeric)
+  </h1>
+  <div class="hero-underline" style="margin-bottom: 8px"></div>
+  <p style="text-align: center; color: var(--muted); margin-bottom: 28px">
+    Answer the questions below — Random Forest and KNN will each classify the
+    result into one of the 4 lung-tissue categories
+  </p>
+
+  <!-- ══ QUESTIONNAIRE FORM ══════════════════════════════════════════════ -->
+  <form id="predictorFormEl">
+    <div class="section-card" style="margin-bottom: 28px">
+      <div class="section-header">📝 Patient Information</div>
+      <div class="section-body">
+        <div class="form-grid" id="predictorForm">
+          <div class="field-group">
+            <label>Age</label>
+            <input
+              type="number"
+              id="f_age"
+              name="age"
+              value="55"
+              min="20"
+              max="100"
+            />
+          </div>
+          <div class="field-group">
+            <label>Gender</label>
+            <input type="hidden" id="h_gender" name="gender" value="1" />
+            <div class="toggle-group">
+              <button
+                type="button"
+                class="toggle-btn"
+                onclick="setToggle('gender', 0, this)"
+              >
+                Female
+              </button>
+              <button
+                type="button"
+                class="toggle-btn active"
+                onclick="setToggle('gender', 1, this)"
+              >
+                Male
+              </button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Smoking</label>
+            <input type="hidden" id="h_smoking" name="smoking" value="0" />
+            <div class="toggle-group">
+              <button
+                type="button"
+                class="toggle-btn active"
+                onclick="setToggle('smoking', 0, this)"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                class="toggle-btn"
+                onclick="setToggle('smoking', 1, this)"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Yellow Fingers</label>
+            <input
+              type="hidden"
+              id="h_yellow_fingers"
+              name="yellow_fingers"
+              value="0"
+            />
+            <div class="toggle-group">
+              <button
+                type="button"
+                class="toggle-btn active"
+                onclick="setToggle('yellow_fingers', 0, this)"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                class="toggle-btn"
+                onclick="setToggle('yellow_fingers', 1, this)"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Anxiety</label>
+            <input type="hidden" id="h_anxiety" name="anxiety" value="0" />
+            <div class="toggle-group">
+              <button
+                type="button"
+                class="toggle-btn active"
+                onclick="setToggle('anxiety', 0, this)"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                class="toggle-btn"
+                onclick="setToggle('anxiety', 1, this)"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Peer Pressure</label>
+            <input
+              type="hidden"
+              id="h_peer_pressure"
+              name="peer_pressure"
+              value="0"
+            />
+            <div class="toggle-group">
+              <button
+                type="button"
+                class="toggle-btn active"
+                onclick="setToggle('peer_pressure', 0, this)"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                class="toggle-btn"
+                onclick="setToggle('peer_pressure', 1, this)"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Chronic Disease</label>
+            <input
+              type="hidden"
+              id="h_chronic_disease"
+              name="chronic_disease"
+              value="0"
+            />
+            <div class="toggle-group">
+              <button
+                type="button"
+                class="toggle-btn active"
+                onclick="setToggle('chronic_disease', 0, this)"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                class="toggle-btn"
+                onclick="setToggle('chronic_disease', 1, this)"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Fatigue</label>
+            <input type="hidden" id="h_fatigue" name="fatigue" value="0" />
+            <div class="toggle-group">
+              <button
+                type="button"
+                class="toggle-btn active"
+                onclick="setToggle('fatigue', 0, this)"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                class="toggle-btn"
+                onclick="setToggle('fatigue', 1, this)"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Allergy</label>
+            <input type="hidden" id="h_allergy" name="allergy" value="0" />
+            <div class="toggle-group">
+              <button
+                type="button"
+                class="toggle-btn active"
+                onclick="setToggle('allergy', 0, this)"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                class="toggle-btn"
+                onclick="setToggle('allergy', 1, this)"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Wheezing</label>
+            <input type="hidden" id="h_wheezing" name="wheezing" value="0" />
+            <div class="toggle-group">
+              <button
+                type="button"
+                class="toggle-btn active"
+                onclick="setToggle('wheezing', 0, this)"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                class="toggle-btn"
+                onclick="setToggle('wheezing', 1, this)"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Alcohol Consuming</label>
+            <input type="hidden" id="h_alcohol" name="alcohol" value="0" />
+            <div class="toggle-group">
+              <button
+                type="button"
+                class="toggle-btn active"
+                onclick="setToggle('alcohol', 0, this)"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                class="toggle-btn"
+                onclick="setToggle('alcohol', 1, this)"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Coughing</label>
+            <input type="hidden" id="h_coughing" name="coughing" value="0" />
+            <div class="toggle-group">
+              <button
+                type="button"
+                class="toggle-btn active"
+                onclick="setToggle('coughing', 0, this)"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                class="toggle-btn"
+                onclick="setToggle('coughing', 1, this)"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Shortness of Breath</label>
+            <input
+              type="hidden"
+              id="h_shortness_of_breath"
+              name="shortness_of_breath"
+              value="0"
+            />
+            <div class="toggle-group">
+              <button
+                type="button"
+                class="toggle-btn active"
+                onclick="setToggle('shortness_of_breath', 0, this)"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                class="toggle-btn"
+                onclick="setToggle('shortness_of_breath', 1, this)"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Swallowing Difficulty</label>
+            <input
+              type="hidden"
+              id="h_swallowing_difficulty"
+              name="swallowing_difficulty"
+              value="0"
+            />
+            <div class="toggle-group">
+              <button
+                type="button"
+                class="toggle-btn active"
+                onclick="setToggle('swallowing_difficulty', 0, this)"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                class="toggle-btn"
+                onclick="setToggle('swallowing_difficulty', 1, this)"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Chest Pain</label>
+            <input
+              type="hidden"
+              id="h_chest_pain"
+              name="chest_pain"
+              value="0"
+            />
+            <div class="toggle-group">
+              <button
+                type="button"
+                class="toggle-btn active"
+                onclick="setToggle('chest_pain', 0, this)"
+              >
+                No
+              </button>
+              <button
+                type="button"
+                class="toggle-btn"
+                onclick="setToggle('chest_pain', 1, this)"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary"
+          style="width: 100%; margin-top: 18px"
+          id="analyzeBtn"
+          onclick="submitForm()"
+        >
+          <span id="analyzeBtnText">🔬 Analyze Risk</span>
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <!-- ══ RANDOM FOREST RESULT CARD ══════════════════════════════════════ -->
+  {% if rf_prediction %}
+  <div class="section-card" style="margin-bottom: 28px">
+    <div class="section-header">🌲 Random Forest Prediction</div>
+    <div class="section-body">
+      <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 18px">
+        Trained on the 15 questionnaire symptoms, classifying into the same 4
+        categories used by the CT-scan model. Treated as the primary numeric
+        result.
+      </p>
+      <div style="margin-bottom: 14px">
+        <span
+          style="background:{{ risk_color(rf_prediction.type) }};color:#fff;padding:8px 20px;border-radius:99px;font-weight:700;font-size:0.95rem;"
+        >
+          ✅ {{ rf_prediction.confidence }} Confidence
+        </span>
+        <span
+          style="margin-left:8px;font-size:0.8rem;font-weight:600;color:{{ risk_color(rf_prediction.type) }}"
+        >
+          {{ risk_label(rf_prediction.type) }}
+        </span>
+      </div>
+      <div
+        style="font-family:'Lexend',sans-serif;font-size:1.6rem;font-weight:800;color:{{ risk_color(rf_prediction.type) }};margin-bottom:16px;"
+      >
+        {{ rf_prediction.label }}
+      </div>
+
+      <h4
+        style="
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: var(--muted);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-bottom: 14px;
+        "
+      >
+        📊 Probability Distribution
+      </h4>
+      {% for name, prob in rf_prediction.probs %} {% set is_winner = loop.index0
+      == rf_prediction.winner_idx %}
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 10px;
+        "
+      >
+        <span
+          style="font-size:.85rem;width:200px;flex-shrink:0;{% if is_winner %}font-weight:700;color:var(--blue);{% else %}color:var(--muted);{% endif %}"
+        >
+          {% if is_winner %}✅ {% endif %}{{ name }}
+        </span>
+        <div
+          style="
+            flex: 1;
+            background: var(--card);
+            border-radius: 99px;
+            height: 24px;
+            overflow: hidden;
+          "
+        >
+          <div
+            style="height:100%;border-radius:99px;display:flex;align-items:center;padding-right:10px;justify-content:flex-end;
+            background:{{ bar_color(name) }};width:{{ [prob,100]|min }}%;color:#fff;font-size:.75rem;font-weight:700;"
+          >
+            {% if prob > 6 %}{{ prob }}%{% endif %}
+          </div>
+        </div>
+        <span
+          style="font-size:.82rem;font-weight:700;padding:3px 12px;border-radius:99px;min-width:60px;text-align:center;background:{{ bar_color(name) }};color:#fff;"
+        >
+          {{ prob }}%
+        </span>
+      </div>
+      {% endfor %}
+
+      <div class="about-box" style="margin-top: 16px">
+        <h4>📋 About this class</h4>
+        <ul>
+          {% for fact in rf_prediction.facts %}
+          <li>{{ fact }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      {% if rf_plot %}
+      <div style="margin-top: 18px">
+        <p style="font-size: 0.78rem; color: var(--muted); margin-bottom: 8px">
+          Symptom Importance (Random Forest)
+        </p>
+        <img
+          src="data:image/png;base64,{{ rf_plot }}"
+          alt="Random Forest symptom importance"
+          style="
+            width: 100%;
+            max-width: 500px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+          "
+        />
+      </div>
+      {% endif %}
+
+      <p style="font-size: 0.8rem; color: var(--muted); margin-top: 14px">
+        🕐 Analysis completed: {{ rf_prediction.timestamp }}
+      </p>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ══ KNN RESULT CARD ═════════════════════════════════════════════════ -->
+  {% if knn_prediction %}
+  <div class="section-card" style="margin-bottom: 28px">
+    <div class="section-header">📍 K-Nearest Neighbors Prediction</div>
+    <div class="section-body">
+      <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 18px">
+        Trained on the same 15 symptom features, shown separately for comparison
+        against the Random Forest result above.
+      </p>
+      <div style="margin-bottom: 12px">
+        <span
+          style="background:{{ risk_color(knn_prediction.type) }};color:#fff;padding:6px 16px;border-radius:99px;font-weight:700;font-size:0.85rem;"
+        >
+          {{ knn_prediction.confidence }} Confidence
+        </span>
+        <span
+          style="margin-left:8px;font-size:0.8rem;font-weight:600;color:{{ risk_color(knn_prediction.type) }}"
+        >
+          {{ risk_label(knn_prediction.type) }}
+        </span>
+      </div>
+      <div
+        style="font-family:'Lexend',sans-serif;font-size:1.4rem;font-weight:800;color:{{ risk_color(knn_prediction.type) }};margin-bottom:16px;"
+      >
+        {{ knn_prediction.label }}
+      </div>
+      {% for name, prob in knn_prediction.probs %} {% set is_winner =
+      loop.index0 == knn_prediction.winner_idx %}
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 8px;
+        "
+      >
+        <span
+          style="font-size:.8rem;width:160px;flex-shrink:0;{% if is_winner %}font-weight:700;color:var(--blue);{% else %}color:var(--muted);{% endif %}"
+        >
+          {{ name }}
+        </span>
+        <div
+          style="
+            flex: 1;
+            background: var(--card);
+            border-radius: 99px;
+            height: 18px;
+            overflow: hidden;
+          "
+        >
+          <div
+            style="height:100%;border-radius:99px;background:{{ bar_color(name) }};width:{{ [prob,100]|min }}%;"
+          ></div>
+        </div>
+        <span
+          style="font-size:0.75rem;width:48px;text-align:right;color:{{ bar_color(name) }};font-weight:600;"
+        >
+          {{ prob }}%
+        </span>
+      </div>
+      {% endfor %} {% if knn_plot %}
+      <div style="margin-top: 18px">
+        <p style="font-size: 0.78rem; color: var(--muted); margin-bottom: 8px">
+          Nearest Neighbor Distances (this patient)
+        </p>
+        <img
+          src="data:image/png;base64,{{ knn_plot }}"
+          alt="KNN nearest neighbor distances"
+          style="
+            width: 100%;
+            max-width: 500px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+          "
+        />
+      </div>
+      {% endif %}
+
+      <div class="note-box" style="margin-top: 18px">
+        ℹ️
+        <span
+          ><strong>Note:</strong> KNN is shown for comparison only — Random
+          Forest above is treated as the primary numeric result.</span
+        >
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ══ MODEL COMPARISON CARD ══════════════════════════════════════════ -->
+  {% if rf_prediction and knn_prediction %}
+  <div class="section-card" style="margin-bottom: 28px">
+    <div class="section-header">📊 Model Comparison &amp; Agreement</div>
+    <div class="section-body">
+      <p style="font-size: 0.82rem; color: var(--muted); margin-bottom: 18px">
+        Side-by-side comparison of both numeric models. Random Forest is the
+        primary result; KNN is shown for validation.
+      </p>
+
+      <!-- RF row -->
+      <div
+        style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:10px;
+        border:1px solid {{ risk_color(rf_prediction.type) }};background:{{ risk_bg(rf_prediction.type) }};margin-bottom:10px;"
+      >
+        <div style="font-size: 1.4rem; flex-shrink: 0">🌲</div>
+        <div style="flex: 1; min-width: 0">
+          <p style="font-size: 0.75rem; color: var(--muted); margin: 0 0 2px">
+            Random Forest (primary)
+          </p>
+          <p
+            style="
+              font-size: 0.95rem;
+              font-weight: 700;
+              color: var(--text);
+              margin: 0;
+            "
+          >
+            {{ rf_prediction.label }}
+          </p>
+        </div>
+        <div style="text-align: right; flex-shrink: 0">
+          <span
+            style="background:{{ risk_color(rf_prediction.type) }};color:#fff;padding:4px 12px;border-radius:99px;font-size:0.78rem;font-weight:700;display:block;white-space:nowrap"
+          >
+            {{ rf_prediction.confidence }}
+          </span>
+          <span
+            style="font-size:0.7rem;font-weight:600;color:{{ risk_color(rf_prediction.type) }}"
+          >
+            {{ risk_label(rf_prediction.type) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- KNN row -->
+      <div
+        style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:10px;margin-bottom:10px;
+        {% if knn_prediction.label == rf_prediction.label %}border:1px solid {{ risk_color(knn_prediction.type) }};background:{{ risk_bg(knn_prediction.type) }};
+        {% else %}border:1px solid #ef4444;background:rgba(239,68,68,0.06);{% endif %}"
+      >
+        <div style="font-size: 1.4rem; flex-shrink: 0">📍</div>
+        <div style="flex: 1; min-width: 0">
+          <p style="font-size: 0.75rem; color: var(--muted); margin: 0 0 2px">
+            KNN
+          </p>
+          <p
+            style="
+              font-size: 0.95rem;
+              font-weight: 700;
+              color: var(--text);
+              margin: 0;
+            "
+          >
+            {{ knn_prediction.label }} {% if knn_prediction.label ==
+            rf_prediction.label %}
+            <span
+              style="
+                font-size: 0.7rem;
+                font-weight: 600;
+                background: #d1fae5;
+                color: #065f46;
+                padding: 2px 8px;
+                border-radius: 99px;
+                margin-left: 6px;
+              "
+              >✔ Agrees</span
+            >
+            {% else %}
+            <span
+              style="
+                font-size: 0.7rem;
+                font-weight: 600;
+                background: #fee2e2;
+                color: #991b1b;
+                padding: 2px 8px;
+                border-radius: 99px;
+                margin-left: 6px;
+              "
+              >✘ Disagrees</span
+            >
+            {% endif %}
+          </p>
+        </div>
+        <div style="text-align: right; flex-shrink: 0">
+          <span
+            style="padding:4px 12px;border-radius:99px;font-size:0.78rem;font-weight:700;color:#fff;display:block;white-space:nowrap;
+            background:{% if knn_prediction.label == rf_prediction.label %}{{ risk_color(knn_prediction.type) }}{% else %}#ef4444{% endif %}"
+          >
+            {{ knn_prediction.confidence }}
+          </span>
+          <span
+            style="font-size:0.7rem;font-weight:600;color:{{ risk_color(knn_prediction.type) }}"
+          >
+            {{ risk_label(knn_prediction.type) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Verdict -->
+      {% if rf_prediction.label == knn_prediction.label %}
+      <div
+        style="
+          margin-top: 16px;
+          padding: 14px 16px;
+          border-radius: 10px;
+          border-left: 3px solid #16a34a;
+          background: var(--card);
+        "
+      >
+        <p
+          style="
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin: 0 0 6px;
+            color: #16a34a;
+          "
+        >
+          ✅ Both models agree
+        </p>
+        <p style="font-size: 0.82rem; color: var(--muted); margin: 0">
+          Random Forest and KNN both predict
+          <strong>{{ rf_prediction.label }}</strong>. Stronger consensus from
+          the symptom data.
+        </p>
+      </div>
+      {% else %}
+      <div
+        style="
+          margin-top: 16px;
+          padding: 14px 16px;
+          border-radius: 10px;
+          border-left: 3px solid #dc2626;
+          background: var(--card);
+        "
+      >
+        <p
+          style="
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin: 0 0 6px;
+            color: #dc2626;
+          "
+        >
+          ⚠️ Models disagree
+        </p>
+        <p style="font-size: 0.82rem; color: var(--muted); margin: 0">
+          Random Forest predicts <strong>{{ rf_prediction.label }}</strong>, KNN
+          predicts <strong>{{ knn_prediction.label }}</strong>. Random Forest is
+          treated as the primary numeric result.
+        </p>
+      </div>
+      {% endif %}
+
+      <div class="note-box" style="margin-top: 14px">
+        ℹ️
+        <span
+          ><strong>Note:</strong> This questionnaire-based screening is an
+          educational simulation, not a diagnosis. Always consult a qualified
+          medical professional.</span
+        >
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  function setToggle(key, val, btn) {
+    document.getElementById("h_" + key).value = val;
+    const grp = btn.parentElement;
+    grp
+      .querySelectorAll(".toggle-btn")
+      .forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+  }
+
+  function submitForm() {
+    const btn = document.getElementById("analyzeBtn");
+    btn.disabled = true;
+    document.getElementById("analyzeBtnText").textContent = "⏳ Analysing…";
+
+    const fd = new FormData(document.getElementById("predictorFormEl"));
+    fetch("/predict_numeric", { method: "POST", body: fd })
+      .then((r) => r.text())
+      .then((html) => {
+        document.open();
+        document.write(html);
+        document.close();
+      })
+      .catch((err) => {
+        alert("Error: " + err.message);
+        btn.disabled = false;
+        document.getElementById("analyzeBtnText").textContent =
+          "🔬 Analyze Risk";
+      });
+  }
+</script>
+{% endblock %}
