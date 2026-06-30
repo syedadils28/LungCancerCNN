@@ -1,0 +1,2 @@
+Reports/** filter=lfs diff=lfs merge=lfs -text
+Reports/* filter=lfs diff=lfs merge=lfs -text
